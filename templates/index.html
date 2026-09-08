@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Network Assistant</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>AI Network Assistant</h1>
+
+        <p class="subtitle">
+            Ask questions about networking and get AI-powered explanations.
+        </p>
+
+        <div class="card">
+
+            <label for="question">
+                Your networking question
+            </label>
+
+            <textarea
+                id="question"
+                placeholder="Example: What is OSPF and how does it work?"
+            ></textarea>
+
+            <button id="askButton">
+                Ask AI
+            </button>
+
+            <div class="answer-section">
+
+                <h2>AI Answer</h2>
+
+                <div id="answer" class="answer">
+                    Your answer will appear here.
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        const askButton = document.getElementById("askButton");
+        const questionInput = document.getElementById("question");
+        const answerBox = document.getElementById("answer");
+
+        askButton.addEventListener("click", async () => {
+
+            const question = questionInput.value.trim();
+
+            if (!question) {
+                answerBox.textContent = "Please enter a networking question.";
+                return;
+            }
+
+            askButton.disabled = true;
+            askButton.textContent = "Thinking...";
+            answerBox.textContent = "Generating answer...";
+
+            try {
+                const response = await fetch("/api/ask", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        question: question
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    answerBox.textContent = data.error || "Something went wrong.";
+                    return;
+                }
+
+                answerBox.textContent = data.answer;
+
+            } catch (error) {
+                answerBox.textContent =
+                    "Could not connect to the server.";
+            }
+
+            askButton.disabled = false;
+            askButton.textContent = "Ask AI";
+        });
+    </script>
+
+</body>
+</html>
