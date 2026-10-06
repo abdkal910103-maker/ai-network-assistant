@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,90 +12,299 @@
 
 <body>
 
-    <div class="container">
+<div class="container">
 
-        <h1>AI Network Assistant</h1>
+    <h1>AI Network Assistant</h1>
 
-        <p class="subtitle">
-            Ask questions about networking and get AI-powered explanations.
-        </p>
+    <p class="subtitle">
+        Your AI-powered assistant for networking questions,
+        troubleshooting and network commands.
+    </p>
 
-        <div class="card">
 
-            <label for="question">
-                Your networking question
-            </label>
+    <!-- THREE FEATURES -->
+    <div class="features">
+
+
+        <!-- ASK AI -->
+        <div class="card feature-card">
+
+            <h2>💡 Ask AI</h2>
+
+            <p class="description">
+                Ask any question about computer networking.
+            </p>
 
             <textarea
                 id="question"
-                placeholder="Example: What is OSPF and how does it work?"
+                placeholder="Example: What is TCP?"
             ></textarea>
 
             <button id="askButton">
                 Ask AI
             </button>
 
-            <div class="answer-section">
+        </div>
 
-                <h2>AI Answer</h2>
 
-                <div id="answer" class="answer">
-                    Your answer will appear here.
-                </div>
+        <!-- NETWORK TROUBLESHOOTER -->
+        <div class="card feature-card">
 
-            </div>
+            <h2>🔧 Network Troubleshooter</h2>
+
+            <p class="description">
+                Describe a network problem and get step-by-step troubleshooting help.
+            </p>
+
+            <textarea
+                id="problem"
+                placeholder="Example: My computer is connected to Wi-Fi but I cannot access the internet."
+            ></textarea>
+
+            <button id="troubleshootButton">
+                Troubleshoot Problem
+            </button>
+
+        </div>
+
+
+        <!-- COMMAND GENERATOR -->
+        <div class="card feature-card">
+
+            <h2>⌨️ Network Command Generator</h2>
+
+            <p class="description">
+                Describe what you want to check and get useful networking commands.
+            </p>
+
+            <textarea
+                id="commandRequest"
+                placeholder="Example: How can I check my IP address and DNS settings?"
+            ></textarea>
+
+            <button id="commandButton">
+                Generate Commands
+            </button>
 
         </div>
 
     </div>
 
-    <script>
-        const askButton = document.getElementById("askButton");
-        const questionInput = document.getElementById("question");
-        const answerBox = document.getElementById("answer");
 
-        askButton.addEventListener("click", async () => {
+    <!-- AI RESPONSE -->
+    <div class="card">
 
-            const question = questionInput.value.trim();
+        <h2>AI Response</h2>
 
-            if (!question) {
-                answerBox.textContent = "Please enter a networking question.";
-                return;
-            }
+        <div id="answer" class="answer">
+            Your answer will appear here.
+        </div>
 
-            askButton.disabled = true;
-            askButton.textContent = "Thinking...";
-            answerBox.textContent = "Generating answer...";
+    </div>
 
-            try {
-                const response = await fetch("/api/ask", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        question: question
-                    })
-                });
+</div>
 
-                const data = await response.json();
 
-                if (!response.ok) {
-                    answerBox.textContent = data.error || "Something went wrong.";
-                    return;
-                }
+<script>
 
-                answerBox.textContent = data.answer;
+const answer = document.getElementById("answer");
 
-            } catch (error) {
-                answerBox.textContent =
-                    "Could not connect to the server.";
-            }
 
-            askButton.disabled = false;
-            askButton.textContent = "Ask AI";
+async function sendRequest(
+    endpoint,
+    body,
+    button,
+    defaultText,
+    loadingText
+) {
+
+    button.disabled = true;
+    button.textContent = loadingText;
+
+    answer.textContent = "Generating answer...";
+
+
+    try {
+
+        const response = await fetch(endpoint, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(body)
+
         });
-    </script>
+
+
+        const data = await response.json();
+
+
+        if (data.answer) {
+
+            answer.textContent = data.answer;
+
+        } else if (data.error) {
+
+            answer.textContent = data.error;
+
+        } else {
+
+            answer.textContent = "No answer received.";
+
+        }
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        answer.textContent =
+            "Could not connect to the server.";
+
+    }
+
+
+    button.disabled = false;
+    button.textContent = defaultText;
+
+}
+
+
+/* =========================
+   ASK AI
+========================= */
+
+document
+    .getElementById("askButton")
+    .addEventListener("click", function () {
+
+        const question =
+            document
+                .getElementById("question")
+                .value
+                .trim();
+
+
+        if (!question) {
+
+            answer.textContent =
+                "Please enter a networking question.";
+
+            return;
+
+        }
+
+
+        sendRequest(
+
+            "/api/ask",
+
+            {
+                question: question
+            },
+
+            document.getElementById("askButton"),
+
+            "Ask AI",
+
+            "Thinking..."
+
+        );
+
+    });
+
+
+/* =========================
+   NETWORK TROUBLESHOOTER
+========================= */
+
+document
+    .getElementById("troubleshootButton")
+    .addEventListener("click", function () {
+
+        const problem =
+            document
+                .getElementById("problem")
+                .value
+                .trim();
+
+
+        if (!problem) {
+
+            answer.textContent =
+                "Please describe your network problem.";
+
+            return;
+
+        }
+
+
+        sendRequest(
+
+            "/api/troubleshoot",
+
+            {
+                problem: problem
+            },
+
+            document.getElementById("troubleshootButton"),
+
+            "Troubleshoot Problem",
+
+            "Analyzing..."
+
+        );
+
+    });
+
+
+/* =========================
+   NETWORK COMMAND GENERATOR
+========================= */
+
+document
+    .getElementById("commandButton")
+    .addEventListener("click", function () {
+
+        const requestText =
+            document
+                .getElementById("commandRequest")
+                .value
+                .trim();
+
+
+        if (!requestText) {
+
+            answer.textContent =
+                "Please describe what you want to check.";
+
+            return;
+
+        }
+
+
+        sendRequest(
+
+            "/api/commands",
+
+            {
+                request: requestText
+            },
+
+            document.getElementById("commandButton"),
+
+            "Generate Commands",
+
+            "Generating..."
+
+        );
+
+    });
+
+</script>
 
 </body>
 </html>
